@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY . /app/
+
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch \
+    && pip install --no-cache-dir networkx h5py grpcio grpcio-tools
+
+RUN python -m grpc_tools.protoc \
+    -I./protos \
+    --python_out=./src \
+    --grpc_python_out=./src \
+    protos/getPath_service.proto \
+    && rm -rf /root/.cache/pip/*
+
+WORKDIR /app/src
+
+EXPOSE 50051
+
+CMD ["python", "edgePath_server.py"]

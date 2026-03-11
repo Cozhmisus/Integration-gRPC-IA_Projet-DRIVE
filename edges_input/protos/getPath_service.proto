@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package getpathservice;
+
+service PathService {
+    rpc StartEnv (Empty) returns (StartMessage) {}
+    rpc EndEnv (Empty) returns (EndMessage) {}
+    rpc GetPathToTarget (InitialData) returns (PathToTarget) {}
+}
+
+message Empty {}
+
+message StartMessage {
+    string message = 1;
+    int32 numOfEdges = 2;
+}
+
+message EndMessage {
+    string message = 1;
+}
+
+message InitialData {
+    int32 start_edge = 1;
+    int32 target_edge = 2;
+    int32 timestep = 3;
+}
+
+message PathToTarget {
+    repeated int32 edges = 1;
+}
