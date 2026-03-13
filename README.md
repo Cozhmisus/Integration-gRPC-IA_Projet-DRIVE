@@ -5,13 +5,13 @@ Dans le cadre du projet européen DRIVE, une IA ayant pour rôle de choisir le c
 Ce projet vise à conteneuriser cette IA dans un server gRPC afin de permettre une communication fluide entre la simulation et l'IA. Le server gRPC devait répondre à trois commande : Start - Permettant de initialiser la simulation / ask - Permettant d'interroger le modèle / finish - Permettant de mettre fin à la simulation.
 
 ## Utilisation
-1. Lancement du server : docker run --rm -it -p 50051:50051 path_server
-2. Lancement du code client : docker run --rm -it coord_client <addresse IP du server>:50051
-3. Initialisation de la simulation avec la commande : start
-4. Interrogation de l'agent avec la commande : ask
-5. Envoie du noeud de départ et d'arrivée et retour de l'agent
-6. Arrêt de la simulation avec la commande : end
-7. Arrêt du client avec la commande : finish
+1. Lancement du server : ```docker run --rm -it -p 50051:50051 <nom_conteneur_serveur>```
+3. Lancement du code client : ```docker run --rm -it <nom_conteneur_client> <addresse IP du server>:50051```
+4. Initialisation de la simulation avec la commande : ```start```
+5. Interrogation de l'agent avec la commande : ```ask```
+6. Envoie du noeud de départ et d'arrivée et retour de l'agent
+7. Arrêt de la simulation avec la commande : ```end```
+8. Arrêt du client avec la commande : ```finish```
 
 ## Utilisation d'un server gRPC
 Pour ce projet, nous avons décider d'utiliser un server gRPC pour permettre à la communication avec l'interface d'être performante et fléxible.
