@@ -1,0 +1,267 @@
+//
+// Copyright (C) 2026 Touhid Hossain Pritom <pritom.touhid@gmail.com>
+//
+// Documentation for these modules is at https://www.cms-labs.org/research/software/cosifra/
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";  // Import the Empty message type
+
+package coSim;
+
+
+service CoSim {
+
+    rpc Start (Config) returns (google.protobuf.Empty);
+    rpc ExecuteOneTimeStep (StepRequest) returns (StepReply);
+    rpc Finish (google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc GetManagedHosts(google.protobuf.Empty) returns (VehicleList);
+    rpc QueryRequest (google.protobuf.Empty) returns (Requests);
+    rpc SetAttribute (Request) returns (google.protobuf.Empty);
+    rpc GetAttribute (Request) returns (Request);   
+}
+
+message ValueType{
+    oneof value{
+        int32 intValue = 1;
+        double doubleValue = 2;
+        string stringValue = 3;
+        IntArray intArray = 4;
+        DoubleArray doubleArray = 5;
+        StringArray stringArray = 6;
+        PolygonList polygonList = 7;
+        LaneList laneList = 8;
+        PGBoundary pgBoundary = 9;
+        PolygonDescription polygonDescription = 10;
+        Messages messages = 11;
+
+        
+    }
+    //Array type definitions 
+    message IntArray{
+        repeated int32 values = 1;
+    }
+    message DoubleArray{
+        repeated double values = 1;
+    }
+    message StringArray{
+        repeated string values = 1;
+    }
+    
+}
+
+
+enum EntityType {
+    CAR = 0;
+    UAV = 1;
+    SATELLITE = 2;
+    OPERATOR = 3;
+}
+
+enum MessageType {
+    V2V = 0;    // Vehicle to Vehicle (includes UAV-to-UAV, UAV-to-Car, etc.)
+    V2I = 1;    // Vehicle to Infrastructure
+    V2N = 2;    // Vehicle to Network
+    V2S = 3;    // Vehicle to Satellite
+    S2S = 4;    // Satellite to Satellite
+}
+
+message Requests{
+    repeated Request requests = 1;
+}
+
+message Request{
+    enum Attribute{
+        SPEED = 0;
+        ROUTE = 1;
+        SHAPE = 2;
+        BOUNDARIES = 3;
+        MESSAGE = 4;
+        
+    }
+    enum RequestType{
+        GET = 0;
+        SET = 1;
+        CHANGE = 2;
+        TX_MESSAGE = 3;  // Transmit message
+        RX_MESSAGE = 4;  // Receive message
+        DX_MESSAGE = 5;  // Dropped message
+    }
+
+    enum Category{
+        VEHICLE = 0;
+        LANE = 1;
+        ROAD = 2;
+        POLYGON = 3;
+        MAP = 4;
+        APPLICATION = 5;
+        NETWORK = 6;
+    }
+    Attribute attribute = 1;
+    bool forAll = 7; 
+    RequestType type = 2;
+    Category category = 3;
+    string id = 4;
+    ValueType value = 5;
+    string subAttributeId = 6;
+    string requestId = 8;  // Unique ID for the request 
+    double timestamp = 9;  // SimTime when the request was created
+    EntityType entity_type = 10;  // Vehicle type (for vehicle-targeted requests like SPEED, ROUTE)
+    MessageType message_type = 11;  // Message type (for message requests like TX/RX/DX to route to correct network sim)
+
+}
+
+message Vehicle{
+    string objectId = 1;
+    double px = 2;
+    double py = 3;
+    double pz = 4;
+    string edge = 5;
+    double speed = 6;
+    double angle = 7;
+    int32  signal = 8;
+    double length = 9;
+    double height = 10;
+    double width = 11;
+    EntityType entity_type = 12; // Enum for vehicle type
+}
+
+message Message{
+    string senderId = 1;
+    string receiverId = 2;
+    int32 sequenceNumber = 3;
+    int32 payloadSize  = 4;
+    double timestamp = 5;
+    MessageType message_type = 6;           // Type of message (V2V, V2S, etc.)
+    EntityType sender_entity_type = 7;    // Sender vehicle type
+    EntityType receiver_entity_type = 8;  // Receiver vehicle type
+}
+
+message Messages{
+    repeated Message messages = 1;
+}
+
+message VehicleList{
+    repeated Vehicle vehicles = 1;
+}
+
+// Request to step simulation forward
+message StepRequest {
+    bool proceed = 1;
+    repeated Vehicle vehicles = 2;
+    double  simTime = 3;   
+}
+
+// Reply message
+message StepReply {
+    string status = 1;
+}
+
+message Coordinates{
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}
+
+//message NextStepTime{
+//    double  simTime = 1;
+//}
+
+message Attribute{
+    string name = 1;
+    string value = 2;
+}
+
+message HostAttribute{
+    int32 id = 1;
+    Attribute attribute = 2;
+}
+
+message HostAttributeName{
+    int32 id = 1;
+    string name = 2;
+}
+
+message AttributeValue{
+    string value = 1;
+}
+
+message HostList {
+    repeated Host hosts = 1;
+}
+
+message Host {
+    int32 id = 1;
+    Coordinates coord = 2;
+    repeated Attribute attributes = 3;
+}
+
+message Config{
+    string path = 1;
+
+}
+
+message Coord2D{
+    double x = 1;
+    double y = 2;
+}
+
+message Polygon{
+    string id = 1;
+    string typeId = 2;
+    repeated Coord2D coords = 3;
+}
+
+
+message PolygonList{
+    repeated Polygon polygons = 1;
+    double timestamp = 2;       // SimTime when the response was created
+    string requestId = 3;       // Unique ID for the request
+}
+
+message PGBoundary{
+    Coord2D first = 1;
+    Coord2D second = 2;
+}
+
+message PolygonDescription{
+    string id = 1;
+    string polyType = 2;
+    int32 color_red = 3;
+    int32 color_green = 4;
+    int32 color_blue = 5;
+    int32 color_alpha = 6;
+    bool filled = 7;
+    int32 layer = 8;
+    repeated Coord2D coords = 9;
+}
+
+message Lane{
+    string id = 1;
+    repeated Coord2D coords = 2;
+}
+
+message LaneList{
+    repeated Lane lanes = 1;
+}
+
+
+
+
